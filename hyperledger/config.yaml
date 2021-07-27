@@ -1,0 +1,128 @@
+name: "test-network"
+
+version: 2.2.1
+
+client:
+
+  organization: Org1
+
+  logging:
+    level: info
+  
+  cryptoconfig:
+    path: /opt/gopath/src/github.com/hyperledger/fabric-samples/test-network/organizations
+
+  # Some SDKs support pluggable KV stores, the properties under "credentialStore"
+  # are implementation specific
+  credentialStore:
+    # [Optional]. Used by user store. Not needed if all credentials are embedded in configuration
+    # and enrollments are performed elsewhere.
+    path: "/tmp/state-store"
+
+    # [Optional]. Specific to the CryptoSuite implementation used by GO SDK. Software-based implementations
+    # requiring a key store. PKCS#11 based implementations does not.
+    cryptoStore:
+      # Specific to the underlying KeyValueStore that backs the crypto key store.
+      path: /tmp/msp
+
+  BCCSP:
+    security:
+      enabled: true
+      default:
+        provider: "SW"
+      hashAlgorithm: "SHA2"
+      softVerify: true
+      level: 256
+  
+  tlsCerts:
+    systemCertPool: true
+
+channels:
+
+  mychannel:
+
+    peers:
+      peer0.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+  
+    policies:
+      queryChannelConfig:
+        minResponses: 1
+        maxTargets: 1
+        retryOpts:
+          attempts: 5
+          initialBackoff: 1000ms
+          maxBackoff: 10s
+          backoffFactor: 2.0
+
+organizations:
+  Org1:
+    mspid: Org1MSP
+    cryptopath: peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+    peers:
+      - peer0.org1.example.com
+  Org2:
+    mspid: Org2MSP
+    cryptopath: peerOrganizations/org2.example.com/users/Admin@org1.example.com/msp
+    peers:
+      - peer0.org2.example.com
+
+orderers:
+  _default:
+    grpcOptions:
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      allow-insecure: false
+  
+  orderer.example.com:
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      grpc-max-send-message-length: 15
+    
+    tlsCACerts:
+      pem: |
+          -----BEGIN CERTIFICATE-----
+          MIICJzCCAc2gAwIBAgIUfASyo/u3g0Z/mITlXp0ye76RG+4wCgYIKoZIzj0EAwIw
+          cDELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMQ8wDQYDVQQH
+          EwZEdXJoYW0xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2Nh
+          Lm9yZzEuZXhhbXBsZS5jb20wHhcNMjEwNzI3MDUxOTAwWhcNMzYwNzIzMDUxOTAw
+          WjBwMQswCQYDVQQGEwJVUzEXMBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExDzANBgNV
+          BAcTBkR1cmhhbTEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEcMBoGA1UEAxMT
+          Y2Eub3JnMS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABCCm
+          vh6MDrGGoWR/3Fi/J5IReYH2vjNGoVoSVYDiMesoRuHSsIxaWJzH3/IjYakaJwtR
+          irO962D/IH24Wz8w3hejRTBDMA4GA1UdDwEB/wQEAwIBBjASBgNVHRMBAf8ECDAG
+          AQH/AgEBMB0GA1UdDgQWBBR1FVBqHPwrgjUDFbQttlHzLQ2I3TAKBggqhkjOPQQD
+          AgNIADBFAiEA2CaEYy6vqg1Z4XLnPefWey4ng3zlhawneEjjiLXeaPACIGLZ+4bh
+          hX05DtRtgnM3Q7tCIPJmndw47w352KD2dbdw
+          -----END CERTIFICATE-----
+
+peers:
+
+  _default:
+    grpcOptions:
+      keep-alive-time: 1s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      allow-insecure: false
+    
+  peer0.org1.example.com:
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      grpc.http2.keepalive_time: 15
+    
+    tlsCACerts:
+      path: /opt/gopath/src/github.com/hyperledger/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/msp/tlscacerts/ca.crt
+    
+  peer0.org2.example.com:
+    grpcOptions:
+      ssl-target-name-override: peer0.org2.example.com
+      grpc.http2.keepalive_time: 15
+    
+    tlsCACerts:
+      path: /opt/gopath/src/github.com/hyperledger/fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/msp/tlscacerts/ca.crt
